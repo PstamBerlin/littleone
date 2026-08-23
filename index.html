@@ -1,0 +1,152 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Little One — a pixel game series</title>
+<meta name="description" content="Little One — a pixel-art game series by Peter (11). Chiptune music, boss fights, and a password that carries between games. Episodes 1 & 2 playable now.">
+<meta property="og:title" content="Little One — a pixel game series"><meta property="og:description" content="A pixel-art adventure. Wake the little robots. Long live the cook.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{--bg:#07080f;--bg2:#0e1322;--ink:#e8ecf4;--dim:#8a93ad;--cyan:#4de8e8;--amber:#ffb347;--pink:#ff5c8a;--green:#37e2a0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--ink);font-family:'VT323',monospace;font-size:22px;line-height:1.35;
+    -webkit-font-smoothing:none;image-rendering:pixelated;overflow-x:clip}
+  .px{font-family:'Press Start 2P',monospace;line-height:1.5;-webkit-font-smoothing:none}
+  /* star + scanline backdrop */
+  .stars{position:fixed;inset:0;z-index:0;pointer-events:none;
+    background-image:radial-gradient(1.5px 1.5px at 20% 30%, #4de8e8aa, transparent),
+      radial-gradient(1.5px 1.5px at 70% 20%, #ffb347aa, transparent),
+      radial-gradient(1.5px 1.5px at 85% 60%, #ff5c8aaa, transparent),
+      radial-gradient(1.5px 1.5px at 40% 70%, #37e2a0aa, transparent),
+      radial-gradient(1.5px 1.5px at 12% 80%, #ffffff88, transparent),
+      radial-gradient(1.5px 1.5px at 60% 88%, #4de8e888, transparent),
+      radial-gradient(1.5px 1.5px at 90% 35%, #ffffff66, transparent),
+      radial-gradient(1.5px 1.5px at 33% 12%, #ff5c8a88, transparent);
+    background-size:cover;animation:tw 3.2s steps(2) infinite}
+  @keyframes tw{50%{opacity:.55}}
+  .scan{position:fixed;inset:0;z-index:60;pointer-events:none;
+    background:repeating-linear-gradient(0deg, rgba(0,0,0,.16) 0 2px, transparent 2px 4px);mix-blend-mode:multiply;opacity:.5}
+  main{position:relative;z-index:2;max-width:1000px;margin:0 auto;padding:0 20px}
+  /* hero */
+  .hero{min-height:92svh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:22px}
+  .eyebrow{color:var(--dim);letter-spacing:6px;font-size:16px}
+  h1.title{font-size:clamp(30px,8vw,64px);letter-spacing:2px}
+  h1.title .a{color:var(--amber);text-shadow:4px 4px 0 #7a3d00}
+  h1.title .b{color:var(--cyan);text-shadow:4px 4px 0 #155257}
+  .sub{color:var(--dim);letter-spacing:4px;font-size:15px}
+  .lede{max-width:620px;color:#c7cfe0;font-size:24px;margin-top:6px}
+  .btns{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin-top:8px}
+  .btn{font-family:'Press Start 2P',monospace;font-size:13px;text-decoration:none;color:#07080f;background:var(--amber);
+    padding:16px 22px;box-shadow:6px 6px 0 #7a3d00;transition:transform .06s, box-shadow .06s;display:inline-block}
+  .btn:hover{transform:translate(2px,2px);box-shadow:2px 2px 0 #7a3d00}
+  .btn.cyan{background:var(--cyan);box-shadow:6px 6px 0 #155257}.btn.cyan:hover{box-shadow:2px 2px 0 #155257}
+  .btn.ghost{background:transparent;color:var(--cyan);box-shadow:inset 0 0 0 3px var(--cyan)}
+  .note{color:var(--dim);font-size:16px;letter-spacing:2px}
+  .blink{animation:bl 1s steps(2) infinite}@keyframes bl{50%{opacity:0}}
+  /* strip */
+  .strip{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin:8px 0 70px}
+  .chip{border:3px solid #24304a;padding:12px 16px;color:#c7cfe0;font-size:19px;background:#0c1120}
+  .chip b{color:var(--cyan)}
+  /* sections */
+  section{padding:26px 0 60px}
+  h2.px{font-size:clamp(16px,3.4vw,22px);color:var(--amber);margin-bottom:26px;text-align:center}
+  .eps{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:22px}
+  .ep{background:#0c1120;border:3px solid var(--c);box-shadow:7px 7px 0 #05060c;padding:20px}
+  .ep h3{font-family:'Press Start 2P',monospace;font-size:13px;color:var(--c);margin-bottom:10px}
+  .ep .st{color:var(--ink);font-size:19px;letter-spacing:1px;margin-bottom:8px}
+  .ep p{color:var(--dim);font-size:20px;line-height:1.3;margin-bottom:16px}
+  .tag{display:inline-block;font-family:'Press Start 2P',monospace;font-size:9px;color:var(--c);
+    border:2px solid var(--c);padding:6px 8px;letter-spacing:1px}
+  .ep .play{display:block;margin-top:14px;font-family:'Press Start 2P',monospace;font-size:11px;color:#07080f;
+    background:var(--c);text-align:center;padding:12px;text-decoration:none;box-shadow:4px 4px 0 #05060c}
+  .ep.soon{border-style:dashed;opacity:.72}
+  .ep.soon .st{color:var(--dim)}
+  /* password panel */
+  .pw{border:3px solid var(--green);background:#0c1120;box-shadow:7px 7px 0 #05060c;padding:26px;text-align:center}
+  .pw .code{font-family:'Press Start 2P',monospace;color:var(--green);font-size:clamp(14px,4vw,24px);letter-spacing:4px;margin:14px 0}
+  .pw p{color:#c7cfe0;font-size:21px;max-width:620px;margin:0 auto}
+  /* about */
+  .about{text-align:center;color:#c7cfe0;font-size:22px;max-width:640px;margin:0 auto}
+  .about .big{font-family:'Press Start 2P',monospace;font-size:15px;color:var(--pink);display:block;margin-bottom:16px}
+  footer{border-top:3px solid #24304a;margin-top:40px;padding:34px 0 60px;text-align:center;color:var(--dim);font-size:18px;letter-spacing:1px}
+  footer a{color:var(--cyan);text-decoration:none;border-bottom:2px solid var(--cyan)}
+  .heart{color:var(--pink)}
+</style></head>
+<body>
+<div class="stars"></div><div class="scan"></div>
+<main>
+
+  <section class="hero">
+    <p class="eyebrow">PIXEL GAME · IN PROGRESS</p>
+    <h1 class="title px"><span class="a">LITTLE</span> <span class="b">ONE</span></h1>
+    <p class="sub">THE COMPLETE COLLECTION</p>
+    <p class="lede">A pixel-art game series. Wake the little robots, sneak the living mall, and carry your password from one game into the next.</p>
+    <div class="btns">
+      <a class="btn" href="little-one.html">▶ PLAY NOW</a>
+      <a class="btn ghost" href="#episodes">SEE THE EPISODES</a>
+    </div>
+    <p class="note">2 episodes playable · episode 3 is a building<span class="blink">_</span></p>
+  </section>
+
+  <div class="strip">
+    <div class="chip">🎵 <b>Chiptune</b> music</div>
+    <div class="chip">👾 <b>Boss</b> fights</div>
+    <div class="chip">🔑 A <b>password</b> that carries between games</div>
+    <div class="chip">🕹️ Plays <b>in your browser</b></div>
+  </div>
+
+  <section id="episodes">
+    <h2 class="px">THE EPISODES</h2>
+    <div class="eps">
+      <div class="ep" style="--c:var(--amber)">
+        <h3>EPISODE 1</h3>
+        <div class="st">A Market Ghost Story</div>
+        <p>Explore the dead electronics market, wake the little robots, face Unit&nbsp;07, and send the signal.</p>
+        <span class="tag">ADVENTURE</span>
+        <a class="play" href="little-one.html">PLAY EPISODE 1</a>
+      </div>
+      <div class="ep" style="--c:var(--pink)">
+        <h3>EPISODE 2</h3>
+        <div class="st">Across the River</div>
+        <p>Wake in a drawer, sneak the living mall, find your partner, beat the Overseer, and find Mei.</p>
+        <span class="tag">TAG-TEAM STEALTH</span>
+        <a class="play" href="little-one.html">PLAY EPISODE 2</a>
+      </div>
+      <div class="ep" style="--c:var(--cyan)">
+        <h3>CLICKER</h3>
+        <div class="st">Chips Forever</div>
+        <p>Tap the runner. Old Wen makes chips, the ferry imports chips. Episode 3 is a building. No reason.</p>
+        <span class="tag">ABSURD IDLE</span>
+        <a class="play" href="little-one.html">PLAY THE CLICKER</a>
+      </div>
+      <div class="ep soon" style="--c:var(--dim)">
+        <h3>EPISODE 3</h3>
+        <div class="st">Still Building…</div>
+        <p>It is a building. That is all we can say for now. Peter is on it.</p>
+        <span class="tag">COMING SOON</span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="px">ONE PASSWORD, EVERY GAME</h2>
+    <div class="pw">
+      <p>Finish a game and it hands you a password. Type it into the next one and your story carries over — the little robots remember you.</p>
+      <div class="code">▚ ABLE · COOK · MEI ▞</div>
+      <p style="font-size:18px;color:var(--dim)">(that's not a real one — yours is waiting inside the game)</p>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="px">WHO MADE THIS</h2>
+    <p class="about"><span class="big">Peter, 11, Berlin</span>
+      I make games and then I finish them. Little One is chiptune, pixels, boss fights, and a cook you never quite meet. Two episodes are done; the third is a building.
+      <br><br>Long live the cook. 🍟</p>
+  </section>
+
+</main>
+<footer>
+  <div style="margin-bottom:10px"><a href="little-one.html">▶ Play Little One</a></div>
+  Made by Peter, 11, Berlin · pixels &amp; chiptune, no tracking · made with <span class="heart">♥</span>
+</footer>
+</body></html>
